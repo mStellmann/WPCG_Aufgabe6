@@ -8,6 +8,7 @@ package interfaces;
 import java.util.List;
 
 import javax.vecmath.Point3d;
+import javax.vecmath.TexCoord3f;
 
 import classes.Triangle;
 
@@ -42,6 +43,17 @@ public interface ITriangleMesh {
 	 * @return Index of the vertex in the vertex list.
 	 */
 	public int addVertex(Point3d v);
+	
+	/**
+	 * Add a new texturecoordinate to the texturecoordinate list. The new texturecoordinate is appended to the
+	 * end of the list.
+	 * 
+	 * @param t
+	 *            Texturecoordinate to be added.
+	 * 
+	 * @return Index of the texturecoordinate in the texturecoordinate list.
+	 */
+	public int addTexturecoordinate(TexCoord3f t);
 
 	/**
 	 * Getter.
@@ -60,12 +72,28 @@ public interface ITriangleMesh {
 	/**
 	 * Getter.
 	 * 
+	 * @return Number of texturecoordinates in the triangle mesh.
+	 */
+	public int getNumberOfTexturecoordinate();
+	
+	/**
+	 * Getter.
+	 * 
 	 * @param index
 	 *            Index of the triangle to be accessed.
 	 * @return Triangle at the given index.
 	 */
 	public Triangle getTriangle(int index);
 
+	/**
+	 * Getter
+	 * 
+	 * @param index
+	 *            Index of the texturecoordinate to be accessed.
+	 * @return Texturecoordinate at the given index.
+	 */
+	public TexCoord3f getTexturecoordinate(int index);
+	
 	/**
 	 * Getter
 	 * 
@@ -88,6 +116,13 @@ public interface ITriangleMesh {
 	 * @return List of all Triangles.
 	 */
 	public List<Triangle> getTriangleList();
+	
+	/**
+	 * Getter.
+	 * 
+	 * @return List of all Texturecoordinates.
+	 */
+	public List<TexCoord3f> getTexturecoordinateList();
 
 	/**
 	 * Clear mesh - remove all triangles and vertices.

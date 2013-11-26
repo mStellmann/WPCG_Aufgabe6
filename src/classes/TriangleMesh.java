@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.vecmath.Point3d;
+import javax.vecmath.TexCoord3f;
 
 /**
  * This class stores the information about a TriangleMesh.
@@ -19,14 +20,21 @@ public class TriangleMesh implements ITriangleMesh {
 	 *  List of all Vertices
 	 */
 	private List<Point3d> verticiesList;
+	
 	/**
 	 *  List of all Triangles
 	 */
 	private List<Triangle> triangleList;
+	
+	/**
+	 * List of all Texturecoordinates
+	 */
+	private List<TexCoord3f> texturecoordinateList;
 
 	public TriangleMesh() {
 		this.verticiesList = new ArrayList<Point3d>();
 		this.triangleList = new ArrayList<Triangle>();
+		this.texturecoordinateList = new ArrayList<TexCoord3f>();
 	}
 
 	@Override
@@ -74,6 +82,27 @@ public class TriangleMesh implements ITriangleMesh {
 	@Override
 	public List<Triangle> getTriangleList() {
 		return triangleList;
+	}
+
+	@Override
+	public int addTexturecoordinate(TexCoord3f t) {
+		texturecoordinateList.add(t);
+		return texturecoordinateList.size() - 1;
+	}
+
+	@Override
+	public int getNumberOfTexturecoordinate() {
+		return texturecoordinateList.size();
+	}
+
+	@Override
+	public TexCoord3f getTexturecoordinate(int index) {
+		return texturecoordinateList.get(index);
+	}
+
+	@Override
+	public List<TexCoord3f> getTexturecoordinateList() {
+		return texturecoordinateList;
 	}
 
 }

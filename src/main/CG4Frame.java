@@ -1,31 +1,26 @@
 package main;
 
-import interfaces.IHalfEdgeDatastructure;
-import interfaces.IHalfEdgeDatastructureOperations;
-import interfaces.IHalfEdgeFacet;
-
 import javax.media.j3d.Background;
 import javax.media.j3d.BoundingSphere;
 import javax.media.j3d.BranchGroup;
 import javax.media.j3d.Canvas3D;
 import javax.media.j3d.DirectionalLight;
 import javax.media.j3d.PointLight;
+import javax.media.j3d.Transform3D;
+import javax.media.j3d.TransformGroup;
 import javax.swing.JFrame;
 import javax.vecmath.Color3f;
 import javax.vecmath.Point3d;
 import javax.vecmath.Point3f;
+import javax.vecmath.TexCoord3f;
 import javax.vecmath.Vector3f;
 
-import classes.HalfEdge;
-import classes.HalfEdgeDatastructureOperations;
-import classes.HalfEdgeVertex;
 import classes.Triangle;
 import classes.TriangleMesh;
 
 import com.sun.j3d.utils.behaviors.vp.OrbitBehavior;
 import com.sun.j3d.utils.universe.SimpleUniverse;
 
-import factories.HalfEdgeDatastructureConverter;
 import factories.MeshShapeFactory;
 
 public class CG4Frame extends JFrame {
@@ -77,7 +72,7 @@ public class CG4Frame extends JFrame {
 
 		// Setup frame
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setTitle("Aufgabe 4 - HalfEdgeDatastructure");
+		setTitle("Aufgabe 5 - Textures and Shader");
 		setSize(500, 500);
 		getContentPane().add("Center", canvas3D);
 		setVisible(true);
@@ -116,47 +111,20 @@ public class CG4Frame extends JFrame {
 	protected void createSceneGraph() {
 		TriangleMesh tetrahedron = createTetrahedron();
 		// Adding mesh to our scene
-		scene.addChild(MeshShapeFactory.createMeshShape(tetrahedron));
-
-		IHalfEdgeDatastructure hed = HalfEdgeDatastructureConverter.convert(tetrahedron);
-		IHalfEdgeDatastructureOperations hedOperations = new HalfEdgeDatastructureOperations();
-		// Println - HalfEdgeDatastructure
-		for (int i = 0; i < hed.getNumberOfHalfEdges(); i++) {
-			System.out.println(hed.getHalfEdge(i));
-		}
-
-		// ----- some tests -----
-		// adjacent vertices of a vertex
-		System.out.println("Adjacent vertices of vertex(0):");
-		for (HalfEdgeVertex elem : hedOperations.getAdjacentVertices(hed.getVertex(0)))
-			System.out.println(elem);
-
-		// incident facets of a vertex
-		System.out.println("\nIncident facets of vertex(0):");
-		for (IHalfEdgeFacet elem : hedOperations.getIncidentFacets(hed.getVertex(0)))
-			System.out.println(elem);
-
-		// incident edges of a vertex
-		System.out.println("\nIncident edges of vertex(0):");
-		for (HalfEdge elem : hedOperations.getIncidetEdges(hed.getVertex(0)))
-			System.out.println(elem);
-
-		// incident vertices of a facet
-		System.out.println("\nIncident vertices of facet(0):");
-		for (HalfEdgeVertex elem : hedOperations.getIncidentVertices(hed.getFacet(0)))
-			System.out.println(elem);
-
-		// incident facets of a facet
-		System.out.println("\nIncident facets of facet(0):");
-		for (IHalfEdgeFacet elem : hedOperations.getIncidentFacets(hed.getFacet(0)))
-			System.out.println(elem);
-
-		// incident halfedges of a facet
-		System.out.println("\nIncident halfedges of facet(0):");
-		for (HalfEdge elem : hedOperations.getIncidentHalfEdges(hed.getFacet(0)))
-			System.out.println(elem);
-		// ----- end tests -----
-
+		scene.addChild(MeshShapeFactory.createMeshShape(tetrahedron, "ressources/textures/hippi.jpg"));
+		
+		Transform3D tetraTranslate = new Transform3D();
+		tetraTranslate.setTranslation(new Vector3f(1.5f, 0f, 0f));
+		TransformGroup g = new TransformGroup(tetraTranslate);
+		g.addChild(MeshShapeFactory.createMeshShape(tetrahedron, "ressources/textures/fire.jpg"));
+		
+		Transform3D tetraTranslate2 = new Transform3D();
+		tetraTranslate2.setTranslation(new Vector3f(-1.5f, 0f, 0f));
+		TransformGroup g2 = new TransformGroup(tetraTranslate2);
+		g2.addChild(MeshShapeFactory.createMeshShape(tetrahedron, "ressources/shader/vertex_shader_texture.glsl", "ressources/shader/fragment_shader_texture.glsl", "ressources/textures/fire.jpg"));
+		
+		scene.addChild(g);
+		scene.addChild(g2);
 		// Assemble scene
 		scene.compile();
 		universe.addBranchGraph(scene);
@@ -177,6 +145,10 @@ public class CG4Frame extends JFrame {
 		Point3d p1 = new Point3d(1.0 + xOffset, 0.0 + yOffset, 0.0 + zOffset);
 		Point3d p2 = new Point3d(0.5 + xOffset, 0.0 + yOffset, -h + zOffset);
 		Point3d p3 = new Point3d(0.5 + xOffset, Math.sqrt(1 - 0.1875) + yOffset, -(h / 2) + zOffset);
+
+		mesh.addTexturecoordinate(new TexCoord3f(0.0f, 0.0f, 0.0f));
+		mesh.addTexturecoordinate(new TexCoord3f(1.0f, 0.0f, 0.0f));
+		mesh.addTexturecoordinate(new TexCoord3f(0.5f, 1.0f, 0.0f));
 
 		addTriangleToMesh(p2, p1, p0, mesh);
 		addTriangleToMesh(p0, p1, p3, mesh);
@@ -202,7 +174,8 @@ public class CG4Frame extends JFrame {
 		int vert1 = mesh.addVertex(p1);
 		int vert2 = mesh.addVertex(p2);
 		int vert3 = mesh.addVertex(p3);
-		Triangle triangle = new Triangle(vert1, vert2, vert3);
+
+		Triangle triangle = new Triangle(vert1, vert2, vert3, 0, 1, 2);
 		triangle.computeNormal(p1, p2, p3);
 		mesh.addTriangle(triangle);
 	}

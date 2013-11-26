@@ -12,13 +12,43 @@ import javax.vecmath.Vector3f;
  */
 public class Triangle {
 
+	/**
+	 * Index of the first vertex.
+	 */
 	private int i;
+
+	/**
+	 * Index of the second vertex.
+	 */
 	private int j;
+
+	/**
+	 * Index of the third vertex.
+	 */
 	private int k;
+
+	/**
+	 * Normal unit vector for this triangle.
+	 */
 	private Vector3d normalVector;
 
 	/**
-	 * Creates a new Triangle
+	 * Index of the first texturecoordinate.
+	 */
+	private int texI;
+
+	/**
+	 * Index of the second texturecoordinate.
+	 */
+	private int texJ;
+
+	/**
+	 * Index of the third texturecoordinate.
+	 */
+	private int texK;
+
+	/**
+	 * Creates a new triangle.
 	 * 
 	 * @param i
 	 *            Index of the first vertex.
@@ -28,9 +58,26 @@ public class Triangle {
 	 *            Index of the third vertex.
 	 */
 	public Triangle(int i, int j, int k) {
+		this(i, j, k, 0, 0, 0);
+	}
+
+	/**
+	 * Creates a new triangle with texturecoordinates.
+	 * 
+	 * @param i
+	 *            Index of the first vertex.
+	 * @param j
+	 *            Index of the second vertex.
+	 * @param k
+	 *            Index of the third vertex.
+	 */
+	public Triangle(int i, int j, int k, int texI, int texJ, int texK) {
 		this.i = i;
 		this.j = j;
 		this.k = k;
+		this.texI = texI;
+		this.texJ = texJ;
+		this.texK = texK;
 	}
 
 	/**
@@ -83,12 +130,39 @@ public class Triangle {
 	/**
 	 * Getter.
 	 * 
+	 * @return Index of the first texturecoordinate.
+	 */
+	public int getTexI() {
+		return texI;
+	}
+
+	/**
+	 * Getter.
+	 * 
+	 * @return Index of the second texturecoordinate.
+	 */
+	public int getTexJ() {
+		return texJ;
+	}
+
+	/**
+	 * Getter.
+	 * 
+	 * @return Index of the third texturecoordinate.
+	 */
+	public int getTexK() {
+		return texK;
+	}
+
+	/**
+	 * Getter.
+	 * 
 	 * @return Normal unit Vector.
 	 */
 	public Vector3d getNormalVector() {
 		return normalVector;
 	}
-	
+
 	/**
 	 * Getter.
 	 * 
