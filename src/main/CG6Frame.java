@@ -1,29 +1,39 @@
 package main;
 
+import interfaces.ICurve;
+
+import java.awt.BorderLayout;
+
+import javax.media.j3d.Appearance;
 import javax.media.j3d.Background;
 import javax.media.j3d.BoundingSphere;
 import javax.media.j3d.BranchGroup;
 import javax.media.j3d.Canvas3D;
+import javax.media.j3d.ColoringAttributes;
 import javax.media.j3d.DirectionalLight;
+import javax.media.j3d.LineArray;
+import javax.media.j3d.LineAttributes;
 import javax.media.j3d.PointLight;
+import javax.media.j3d.Shape3D;
 import javax.media.j3d.Transform3D;
 import javax.media.j3d.TransformGroup;
 import javax.swing.JFrame;
+import javax.swing.JSlider;
 import javax.vecmath.Color3f;
 import javax.vecmath.Point3d;
 import javax.vecmath.Point3f;
-import javax.vecmath.TexCoord3f;
 import javax.vecmath.Vector3f;
 
-import classes.Triangle;
-import classes.TriangleMesh;
+import classes.AppearanceHelper;
+import classes.HermiteCurve;
+import classes.MonomialCurve;
+import classes.SliderListener;
 
 import com.sun.j3d.utils.behaviors.vp.OrbitBehavior;
+import com.sun.j3d.utils.geometry.Sphere;
 import com.sun.j3d.utils.universe.SimpleUniverse;
 
-import factories.MeshShapeFactory;
-
-public class CG4Frame extends JFrame {
+public class CG6Frame extends JFrame {
 
 	/**
 	 * Gernerated serialnumber.
@@ -46,9 +56,14 @@ public class CG4Frame extends JFrame {
 	protected BranchGroup scene = new BranchGroup();
 
 	/**
+	 * JSlider for the Curves
+	 */
+	private JSlider jSlider;
+
+	/**
 	 * Default constructor.
 	 */
-	public CG4Frame() {
+	public CG6Frame() {
 		// Create canvas object to draw on
 		canvas3D = new Canvas3D(SimpleUniverse.getPreferredConfiguration());
 
@@ -72,10 +87,25 @@ public class CG4Frame extends JFrame {
 
 		// Setup frame
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setTitle("Aufgabe 5 - Textures and Shader");
+		setTitle("Aufgabe 6 - Kurven");
 		setSize(500, 500);
 		getContentPane().add("Center", canvas3D);
 		setVisible(true);
+
+		// JSlider Frame
+		jSlider = new JSlider(JSlider.HORIZONTAL, 0, 1000, 0);
+		JFrame sliderFrame = new JFrame("Slide it!");
+		// Turn on labels at major tick marks.
+		jSlider.setMajorTickSpacing(100);
+		jSlider.setMinorTickSpacing(1);
+		jSlider.setPaintTicks(true);
+		jSlider.setPaintLabels(false);
+
+		sliderFrame.getContentPane().add(jSlider, BorderLayout.CENTER);
+		sliderFrame.pack();
+		sliderFrame.validate();
+		sliderFrame.setVisible(true);
+
 	}
 
 	/**
@@ -109,75 +139,43 @@ public class CG4Frame extends JFrame {
 	 * Create the default scene graph.
 	 */
 	protected void createSceneGraph() {
-		TriangleMesh tetrahedron = createTetrahedron();
-		// Adding mesh to our scene
-		scene.addChild(MeshShapeFactory.createMeshShape(tetrahedron, "ressources/textures/hippi.jpg"));
-		
-		Transform3D tetraTranslate = new Transform3D();
-		tetraTranslate.setTranslation(new Vector3f(1.5f, 0f, 0f));
-		TransformGroup g = new TransformGroup(tetraTranslate);
-		g.addChild(MeshShapeFactory.createMeshShape(tetrahedron, "ressources/textures/fire.jpg"));
-		
-		Transform3D tetraTranslate2 = new Transform3D();
-		tetraTranslate2.setTranslation(new Vector3f(-1.5f, 0f, 0f));
-		TransformGroup g2 = new TransformGroup(tetraTranslate2);
-		g2.addChild(MeshShapeFactory.createMeshShape(tetrahedron, "ressources/shader/vertex_shader_texture.glsl", "ressources/shader/fragment_shader_texture.glsl", "ressources/textures/fire.jpg"));
-		
-		scene.addChild(g);
-		scene.addChild(g2);
+		Sphere curvePoint = new Sphere(0.05f);
+		AppearanceHelper.setColor(curvePoint, new Color3f(1f, 0.5f, 0.2f));
+
+		Vector3f p1 = new Vector3f(0f, 0.0f, 0f);
+		Vector3f p2 = new Vector3f(-0.2f, 1f, 0f);
+		Vector3f p3 = new Vector3f(1.5f, 0f, 0f);
+		Vector3f p4 = new Vector3f(0.5f, 0f, 0f);
+		ICurve curve = new MonomialCurve(p1, p2, p3, p4);
+		ICurve curveHermite = new HermiteCurve(p1, p2, p3, p4);
+
+		Transform3D curvePointTransform3D = new Transform3D();
+		curvePointTransform3D.setTranslation(curveHermite.eval(0d));
+		TransformGroup curvePointTransformGroup = new TransformGroup(curvePointTransform3D);
+		curvePointTransformGroup.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
+		curvePointTransformGroup.addChild(curvePoint);
+
+		jSlider.addChangeListener(new SliderListener(curveHermite, curvePointTransformGroup));
+
+		scene.addChild(curvePointTransformGroup);
+		scene.addChild(createCurveLine(curveHermite));
 		// Assemble scene
 		scene.compile();
 		universe.addBranchGraph(scene);
 	}
 
-	/**
-	 * Private method to create a TriangleMesh of a tetrahedron.
-	 * 
-	 * @return TriangleMesh of a tetrahedron.
-	 */
-	private TriangleMesh createTetrahedron() {
-		TriangleMesh mesh = new TriangleMesh();
-		double h = Math.sqrt(0.75);
-		double xOffset = -0.5;
-		double yOffset = -Math.sqrt(1 - 0.1875) / 2;
-		double zOffset = -(h / 2);
-		Point3d p0 = new Point3d(0.0 + xOffset, 0.0 + yOffset, 0.0 + zOffset);
-		Point3d p1 = new Point3d(1.0 + xOffset, 0.0 + yOffset, 0.0 + zOffset);
-		Point3d p2 = new Point3d(0.5 + xOffset, 0.0 + yOffset, -h + zOffset);
-		Point3d p3 = new Point3d(0.5 + xOffset, Math.sqrt(1 - 0.1875) + yOffset, -(h / 2) + zOffset);
-
-		mesh.addTexturecoordinate(new TexCoord3f(0.0f, 0.0f, 0.0f));
-		mesh.addTexturecoordinate(new TexCoord3f(1.0f, 0.0f, 0.0f));
-		mesh.addTexturecoordinate(new TexCoord3f(0.5f, 1.0f, 0.0f));
-
-		addTriangleToMesh(p2, p1, p0, mesh);
-		addTriangleToMesh(p0, p1, p3, mesh);
-		addTriangleToMesh(p1, p2, p3, mesh);
-		addTriangleToMesh(p2, p0, p3, mesh);
-
-		return mesh;
-	}
-
-	/**
-	 * Private methode to add a triangle to a TriangleMesh.
-	 * 
-	 * @param p1
-	 *            First vertex of the triangle.
-	 * @param p2
-	 *            Second vertex of the triangle.
-	 * @param p3
-	 *            Third vertex of the triangle.
-	 * @param mesh
-	 *            Given mesh to add the triangle.
-	 */
-	private void addTriangleToMesh(Point3d p1, Point3d p2, Point3d p3, TriangleMesh mesh) {
-		int vert1 = mesh.addVertex(p1);
-		int vert2 = mesh.addVertex(p2);
-		int vert3 = mesh.addVertex(p3);
-
-		Triangle triangle = new Triangle(vert1, vert2, vert3, 0, 1, 2);
-		triangle.computeNormal(p1, p2, p3);
-		mesh.addTriangle(triangle);
+	private Shape3D createCurveLine(ICurve curve) {
+		Point3f[] points = new Point3f[1000];
+		for (int i = 0; i < 1000; i++) {
+			points[i] = new Point3f(curve.eval((double) i / 1000));
+		}
+		LineArray lineAry = new LineArray(points.length, LineArray.COORDINATES);
+		lineAry.setCoordinates(0, points);
+		LineAttributes lineAttributes = new LineAttributes(0.1f, LineAttributes.PATTERN_DASH_DOT, true);
+		Appearance lineAppearance = new Appearance();
+		lineAppearance.setLineAttributes(lineAttributes);
+		lineAppearance.setColoringAttributes(new ColoringAttributes(new Color3f(0f, 0f, 0f), ColoringAttributes.SHADE_FLAT));
+		return new Shape3D(lineAry, lineAppearance);
 	}
 
 	/**
@@ -188,7 +186,7 @@ public class CG4Frame extends JFrame {
 	 */
 	public static void main(String[] args) {
 		// Create the central frame
-		CG4Frame frame = new CG4Frame();
+		CG6Frame frame = new CG6Frame();
 		// Add content to the scene graph
 		frame.createSceneGraph();
 	}
