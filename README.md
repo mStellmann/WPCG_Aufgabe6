@@ -1,4 +1,4 @@
-WPCG_Aufgabe5
+WPCG_Aufgabe6
 =============
 
-Textures and Shader
+Curves
