@@ -11,6 +11,7 @@ import javax.media.j3d.BranchGroup;
 import javax.media.j3d.Canvas3D;
 import javax.media.j3d.ColoringAttributes;
 import javax.media.j3d.DirectionalLight;
+import javax.media.j3d.Group;
 import javax.media.j3d.LineArray;
 import javax.media.j3d.LineAttributes;
 import javax.media.j3d.PointLight;
@@ -30,6 +31,8 @@ import classes.MonomialCurve;
 import classes.SliderListener;
 
 import com.sun.j3d.utils.behaviors.vp.OrbitBehavior;
+import com.sun.j3d.utils.geometry.Cone;
+import com.sun.j3d.utils.geometry.Cylinder;
 import com.sun.j3d.utils.geometry.Sphere;
 import com.sun.j3d.utils.universe.SimpleUniverse;
 
@@ -139,26 +142,54 @@ public class CG6Frame extends JFrame {
 	 * Create the default scene graph.
 	 */
 	protected void createSceneGraph() {
-		Sphere curvePoint = new Sphere(0.05f);
+		Sphere curvePoint = new Sphere(0.025f);
 		AppearanceHelper.setColor(curvePoint, new Color3f(1f, 0.5f, 0.2f));
+		// Creating the tangent-arrow
+		Cylinder tanCylinder = new Cylinder(0.01f, 0.15f);
+		AppearanceHelper.setColor(tanCylinder, new Color3f(0.1f, 0.7f, 0.2f));
+		Cone tanCone = new Cone(0.025f, 0.025f);
+		AppearanceHelper.setColor(tanCone, new Color3f(0.1f, 0.7f, 0.2f));
+		Transform3D tanTransform3d = new Transform3D();
+		tanTransform3d.setTranslation(new Vector3f(0f,0.075f,0f));
+		TransformGroup tanTransformGroup = new TransformGroup(tanTransform3d);
+		tanTransformGroup.addChild(tanCone);
+		
+		Transform3D tanArrowTransform3D = new Transform3D();
+		tanArrowTransform3D.setTranslation(new Vector3f(0f, 0.075f, 0f));
+		TransformGroup tanArrow = new TransformGroup(tanArrowTransform3D);
+		tanArrow.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
+		tanArrow.addChild(tanTransformGroup);
+		tanArrow.addChild(tanCylinder);
 
 		Vector3f p1 = new Vector3f(0f, 0.0f, 0f);
-		Vector3f p2 = new Vector3f(-0.2f, 1f, 0f);
-		Vector3f p3 = new Vector3f(1.5f, 0f, 0f);
-		Vector3f p4 = new Vector3f(0.5f, 0f, 0f);
+		Vector3f p2 = new Vector3f(0.25f, 2f, 0f);
+		Vector3f p3 = new Vector3f(0.75f, -2f, 0f);
+		Vector3f p4 = new Vector3f(1f, 0f, 0f);
 		ICurve curve = new MonomialCurve(p1, p2, p3, p4);
-		ICurve curveHermite = new HermiteCurve(p1, p2, p3, p4);
+//		ICurve curve = new HermiteCurve(p1, p2, p3, p4);
 
 		Transform3D curvePointTransform3D = new Transform3D();
-		curvePointTransform3D.setTranslation(curveHermite.eval(0d));
+		curvePointTransform3D.setTranslation(curve.eval(0d));
 		TransformGroup curvePointTransformGroup = new TransformGroup(curvePointTransform3D);
 		curvePointTransformGroup.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
+		
+		
+		// For the rotation:
+		double angle = Math.atan2(curve.derivative(0d).getY(), curve.derivative(0d).getX());
+		Transform3D rotTanArrow = new Transform3D();
+		rotTanArrow.rotZ(angle + (-90 * Math.PI / 180));
+		TransformGroup rotationTanArrow = new TransformGroup(rotTanArrow);
+		rotationTanArrow.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
+		
+		rotationTanArrow.addChild(tanArrow);
+		
 		curvePointTransformGroup.addChild(curvePoint);
+		curvePointTransformGroup.addChild(rotationTanArrow);
 
-		jSlider.addChangeListener(new SliderListener(curveHermite, curvePointTransformGroup));
+		jSlider.addChangeListener(new SliderListener(curve, curvePointTransformGroup, rotationTanArrow));
 
 		scene.addChild(curvePointTransformGroup);
-		scene.addChild(createCurveLine(curveHermite));
+		scene.addChild(createCurveLine(curve));
 		// Assemble scene
 		scene.compile();
 		universe.addBranchGraph(scene);
