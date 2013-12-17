@@ -7,7 +7,7 @@ import java.util.List;
 
 import javax.vecmath.Vector3f;
 
-/** 
+/**
  * Implementation of a hermit curve.
  */
 public class HermiteCurve implements ICurve {
@@ -38,37 +38,39 @@ public class HermiteCurve implements ICurve {
 
 	@Override
 	public Vector3f eval(double val) {
-		Vector3f point0 = new Vector3f(points.get(0));
-		point0.scale((float) evalBasisFunction(0, val));
-		
-		Vector3f m0 = new Vector3f(points.get(1));
-		m0.sub(points.get(0));
-		m0.scale((float) evalBasisFunction(1, val));
-		
-		Vector3f m1 = new Vector3f(points.get(2));
-		m1.sub(points.get(3));
-		m1.scale((float) evalBasisFunction(2, val));
-		
-		Vector3f point1 = new Vector3f(points.get(3));
-		point1.scale((float) evalBasisFunction(3, val));
-		
-		point0.add(m0);
-		point0.add(m1);
-		point0.add(point1);
-		return point0;
+		double basic = 0;
+		Vector3f result = new Vector3f();
+
+		for (int i = 0; i < points.size(); i++) {
+			Vector3f innerMult = new Vector3f();
+			basic = evalBasisFunction(i, val);
+			innerMult.scale((float) basic, points.get(i));
+			result.add(innerMult);
+		}
+		return result;
 	}
 
 	@Override
 	public Vector3f derivative(double val) {
-		// TODO Auto-generated method stub
-		return null;
+		double basic = 0;
+		Vector3f result = new Vector3f();
+
+		for (int i = 1; i < points.size(); i++) {
+			Vector3f innerMult = new Vector3f();
+			basic = evalDerivative(i, val);
+			innerMult.scale((float) basic, points.get(i));
+			result.add(innerMult);
+		}
+		return result;
 	}
 
 	/**
 	 * Basic functions for the evaluation.
 	 * 
-	 * @param n Index of the function.
-	 * @param val Value of x.
+	 * @param n
+	 *            Index of the function.
+	 * @param val
+	 *            Value of x.
 	 * @return The value of the called basic function.
 	 */
 	private double evalBasisFunction(int n, double val) {
@@ -93,14 +95,33 @@ public class HermiteCurve implements ICurve {
 	}
 
 	/**
-	 * TODO JavaDoc
+	 * Basic derivation functions for the evaluation.
 	 * 
 	 * @param n
+	 *            Index of the function.
 	 * @param val
-	 * @return
+	 *            Value of x.
+	 * @return The value of the called basic function.
 	 */
 	private double evalDerivative(int n, double val) {
-		// TODO Auto-generated method stub
-		return 0.0;
+		double result = 0d;
+		switch (n) {
+		case 0:
+			result = 6 * val * (val - 1);
+			break;
+		case 1:
+			result = 3 * val * val - 4 * val + 1;
+			break;
+		case 2:
+			result = val * (3 * val - 2);
+			break;
+		case 3:
+			result = -6 * val * (val - 1);
+			break;
+		default:
+			break;
+		}
+		return result;
+
 	}
 }

@@ -163,11 +163,15 @@ public class CG6Frame extends JFrame {
 
 		Vector3f p1 = new Vector3f(0f, 0.0f, 0f);
 		Vector3f p2 = new Vector3f(0.25f, 2f, 0f);
-		Vector3f p3 = new Vector3f(0.75f, -2f, 0f);
-		Vector3f p4 = new Vector3f(1f, 0f, 0f);
-		ICurve curve = new MonomialCurve(p1, p2, p3, p4);
-//		ICurve curve = new HermiteCurve(p1, p2, p3, p4);
-
+		Vector3f p3 = new Vector3f(0.5f, -2f, 0f);
+		Vector3f p4 = new Vector3f(1f, 2f, 0f);
+//		ICurve curve = new MonomialCurve(p1, p2, p3, p4);
+		ICurve curve = new HermiteCurve(p1, p2, p3, p4);
+//		ICurve curve = MonomialCurve.interpolate(new Vector3f[] {new Vector3f(0f, 0f, 0f), new Vector3f(2f, 2f , 0f)});
+//		ICurve curve = MonomialCurve.interpolate(new Vector3f[] {new Vector3f(0f, 0f, 0f), new Vector3f(3f, 0f , 0f),new Vector3f(2f, 2f , 0f)});
+//		System.out.println(curve.eval(1));
+		
+		
 		Transform3D curvePointTransform3D = new Transform3D();
 		curvePointTransform3D.setTranslation(curve.eval(0d));
 		TransformGroup curvePointTransformGroup = new TransformGroup(curvePointTransform3D);
@@ -202,7 +206,7 @@ public class CG6Frame extends JFrame {
 		}
 		LineArray lineAry = new LineArray(points.length, LineArray.COORDINATES);
 		lineAry.setCoordinates(0, points);
-		LineAttributes lineAttributes = new LineAttributes(0.1f, LineAttributes.PATTERN_DASH_DOT, true);
+		LineAttributes lineAttributes = new LineAttributes(0.2f, LineAttributes.PATTERN_DASH_DOT, true);
 		Appearance lineAppearance = new Appearance();
 		lineAppearance.setLineAttributes(lineAttributes);
 		lineAppearance.setColoringAttributes(new ColoringAttributes(new Color3f(0f, 0f, 0f), ColoringAttributes.SHADE_FLAT));

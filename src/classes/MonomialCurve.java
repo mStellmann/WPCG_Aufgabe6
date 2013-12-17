@@ -56,33 +56,79 @@ public class MonomialCurve implements ICurve {
 	 * Constructor for a curve with degree = n.
 	 * 
 	 * @param points
-	 *            Array of all given control points. [degree = points.length - 1]
+	 *            Array of all given control points. [degree = points.length -
+	 *            1]
 	 */
 	public MonomialCurve(Vector3f... points) {
 		this(points.length - 1);
 		controlPoints.addAll(Arrays.asList(points));
 	}
 
+	public static MonomialCurve interpolate(Vector3f[] vectorArray) {
+		if (vectorArray.length == 2) {
+			Vector3f c0 = vectorArray[0];
+			Vector3f c1 = new Vector3f();
+			c1.sub(vectorArray[1], vectorArray[0]);
+
+			return new MonomialCurve(new Vector3f[] { c0, c1 });
+		} else if (vectorArray.length == 3) {
+
+			Vector3f a = vectorArray[0];
+			Vector3f b = vectorArray[1];
+			Vector3f c = vectorArray[2];
+
+			Vector3f n = new Vector3f();
+
+			Vector3f c0 = a;
+			// c1 = (-1*y3)-(3*y1)+(4*y2);
+			Vector3f c1 = new Vector3f();
+			c1.scale(-1, c);
+			n.scale(-3, a);
+			c1.add(n);
+			n.scale(4, b);
+			c1.add(n);
+
+			// c2 = (2*y3)+(2*y1)-(4*y2)
+			Vector3f c2 = new Vector3f();
+			c2.scale(2, c);
+			n.scale(2, a);
+			c2.add(n);
+			n.scale(-4, b);
+			c2.add(n);
+
+			return new MonomialCurve(new Vector3f[] { c0, c1, c2 });
+		} else {
+
+		}
+		return null;
+	}
+
 	@Override
 	public Vector3f eval(double val) {
-		float f_x = 0;
+		double basic = 0;
+		Vector3f result = new Vector3f();
 
-		for (int i = 0; i < controlPoints.size(); ++i) {
-			f_x += (float) Math.pow(val, i) * controlPoints.get(i).y;
+		for (int i = 0; i < controlPoints.size(); i++) {
+			Vector3f innerMult = new Vector3f();
+			basic = Math.pow(val, i);
+			innerMult.scale((float) basic, controlPoints.get(i));
+			result.add(innerMult);
 		}
-
-		return new Vector3f((float) val, f_x, 0f);
+		return result;
 	}
 
 	@Override
 	public Vector3f derivative(double val) {
-		float f_x = 0;
+		double outDer = 0;
+		Vector3f result = new Vector3f();
 
-		for (int i = 1; i < controlPoints.size(); ++i) {
-			f_x += (float) Math.pow(val, i - 1) * controlPoints.get(i).y * i;
+		for (int i = 1; i < controlPoints.size(); i++) {
+			Vector3f innerMult = new Vector3f();
+			outDer = i * Math.pow(val, i - 1);
+			innerMult.scale((float) outDer, controlPoints.get(i));
+			result.add(innerMult);
 		}
-
-		return new Vector3f((float) val, f_x, 0f);
+		return result;
 	}
 
 	/**
